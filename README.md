@@ -1,6 +1,6 @@
-# Git Bisect Tool
+# Bisect
 
-A Next.js web application that performs git bisect operations to find the commit that introduced a bug. Users can upload or clone a repository, provide two commit hashes (one that works and one with the bug), and interactively guide the binary search process.
+<img width="1919" height="902" alt="image" src="https://github.com/user-attachments/assets/c84e0d6d-cf5b-4a88-a224-c6ab9168b89e" />
 
 ## Features
 
