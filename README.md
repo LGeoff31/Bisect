@@ -8,5 +8,31 @@
 - [How to use](#how-to-use)
 - [Architecture](#architecture)
 - [Building process](#building-process)
-   - Step 1
-   - 
+
+
+
+
+## Building Process
+
+### Step 1
+Create the homepage with the name, get started buttons, and the bisect animation
+
+### Step 2
+Create the /api/repo/route.ts which clones their github repo into a ```.repos/{repoId}``` directory.
+```typescript
+export async function POST(request: NextRequest) {
+   const {repoUrl, repoPath} = await request.json();
+   const repoId = uuidv4();
+   const repoDir = path.join(process.cwd(), ".repos");
+   await fs.mkdir(repoDir, {recursive: true});
+
+   const git = simpleGit();
+   await git.clone(repoUrl, repoDir);
+
+   return NextResponse.json({
+      repoId,
+      repoDir: path.relative(process.cwd(), repoDir),
+      message: "Repository read"
+   })
+}
+```
