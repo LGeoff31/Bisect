@@ -256,7 +256,7 @@ export default function BisectAnimation() {
                     {commit.hash}
                     {commit.status === 'bad' && commit.isFirstBad && (
                       <span className="ml-2 text-xs font-semibold px-2 py-0.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded">
-                        FIRST BAD
+                        FIRST BAD COMMIT
                       </span>
                     )}
                   </div>
