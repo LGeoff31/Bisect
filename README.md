@@ -19,7 +19,8 @@ Create the homepage with the name, get started buttons, and the bisect animation
 
 ### Step 2
 Clones their github repo into a ```.repos/{repoId}``` directory.
-```ts title="/api/repo/route.ts"
+```ts
+// /api/repo/route.ts
 export async function POST(request: NextRequest) {
    const {repoUrl, repoPath} = await request.json();
    const repoId = uuidv4();
