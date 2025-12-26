@@ -12,12 +12,8 @@
 
 
 
-## Building Process
+## Backend endpoints (written by me)
 
-### Step 1
-Create the homepage with the name, get started buttons, and the bisect animation
-
-### Step 2
 Clones their github repo into a ```.repos/{repoId}``` directory.
 ```ts
 // /api/repo/route.ts
