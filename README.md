@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
 Retrieves the good and bad commit hash, and returns the half-way commit to test.
 ```ts
-// /api/repo/route.ts
+// /api/start/route.ts
 export async function POST(request: NextRequest) {
    const {repoId, goodCommit, badCommit} = await request.json();
    const repoDir = path.join(process.cwd(), ".repos", repoId);
@@ -54,5 +54,30 @@ export async function POST(request: NextRequest) {
       commitMessage: currentCommit.message;
       commitDate: currentCommit.date,
    })
+}
+```
+
+Simulates marking the current commit as either good or bad, to continue the binary search process
+```ts
+// /api/mark/route.ts
+export async function POST(request: NextRequest) {
+   const {repoId, status} = await request.json();
+   const git = simpleGit(repoDir);
+
+   await git.raw(['bisect', status]);
+   const bisectLog = git.raw(['bisect', 'log']);
+   const isComplete = bisectLog.includes('first bad commit');
+
+   if (isComplete) {
+   const lines = bisectLog.split('\n');
+      const firstBadLine = lines.find(line => line.includes('first bad commit');
+      const match = firstBadLine.match(/\[([a-f0-9)]+)\]/);
+      const firstBadCommit = match[1]; 
+   }
+
+   return NextResponse.json({
+      complete: isComplete,
+      firstBadCommit: firstBadCommit
+    });
 }
 ```
