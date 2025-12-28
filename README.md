@@ -12,7 +12,7 @@
 
 
 
-## Backend endpoints (written by me)
+## Backend endpoints (written by me and concised for demonstration)
 
 Clones their github repo into a ```.repos/{repoId}``` directory.
 ```ts
@@ -30,6 +30,29 @@ export async function POST(request: NextRequest) {
       repoId,
       repoDir: path.relative(process.cwd(), repoDir),
       message: "Repository read"
+   })
+}
+```
+
+Retrieves the good and bad commit hash, and returns the half-way commit to test.
+```ts
+// /api/repo/route.ts
+export async function POST(request: NextRequest) {
+   const {repoId, goodCommit, badCommit} = await request.json();
+   const repoDir = path.join(process.cwd(), ".repos", repoId);
+   const git = simpleGit(repoDir);
+
+   await git.raw(['bisect', 'start']);
+   await git.raw(['bisect', 'good', goodCommit]);
+   await git.raw(['bisect', 'good', badCommit]);
+
+   const currentCommitHash = await git.revparse(['HEAD']).trim();
+   const currentCommit = await git.log({maxCount: 1}).latest;
+
+   return NextResponse.json({
+      currentCommit: currentCommitHash,
+      commitMessage: currentCommit.message;
+      commitDate: currentCommit.date,
    })
 }
 ```
