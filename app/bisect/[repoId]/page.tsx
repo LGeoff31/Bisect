@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import BisectVisualization from '../../components/BisectVisualization';
 
 interface BisectStatus {
   active: boolean;
@@ -10,6 +11,11 @@ interface BisectStatus {
   commitMessage: string | null;
   commitDate: string | null;
   firstBadCommit: string | null;
+  goodCommits: string[];
+  badCommits: string[];
+  initialGoodCommit: string | null;
+  initialBadCommit: string | null;
+  allCommits: Array<{ hash: string; message: string; date: string }>;
 }
 
 export default function BisectSessionPage() {
@@ -24,7 +30,8 @@ export default function BisectSessionPage() {
   const [marking, setMarking] = useState(false);
   const [goodCommit, setGoodCommit] = useState('');
   const [badCommit, setBadCommit] = useState('');
-
+  console.log('good commit geoff', goodCommit);
+  console.log('bad commit geoff', badCommit);
   useEffect(() => {
     fetchStatus();
   }, [repoId]);
@@ -192,10 +199,26 @@ export default function BisectSessionPage() {
           </div>
         ) : status && status.active ? (
           // Active Bisect Session
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-              Current Commit to Test
-            </h2>
+          <>
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6 mb-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Bisect Progress
+              </h2>
+              <BisectVisualization
+                goodCommits={status.goodCommits || []}
+                badCommits={status.badCommits || []}
+                currentCommit={status.currentCommit}
+                allCommits={status.allCommits || []}
+                initialGoodCommit={status.initialGoodCommit}
+                initialBadCommit={status.initialBadCommit}
+                firstBadCommit={status.firstBadCommit}
+                complete={status.complete}
+              />
+            </div>
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                Current Commit to Test
+              </h2>
 
             <div className="space-y-4 mb-6">
               <div>
@@ -248,6 +271,7 @@ export default function BisectSessionPage() {
               </div>
             </div>
           </div>
+          </>
         ) : (
           // No Active Session - Start Bisect Form
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
@@ -261,6 +285,26 @@ export default function BisectSessionPage() {
             </div>
 
             <form onSubmit={handleStartBisect} className="space-y-6">
+
+            <div>
+                <label htmlFor="badCommit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Bad Commit Hash
+                </label>
+                <input
+                  id="badCommit"
+                  type="text"
+                  value={badCommit}
+                  onChange={(e) => setBadCommit(e.target.value)}
+                  placeholder="def456ghi789..."
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
+                  disabled={starting}
+                  required
+                />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Enter the full commit hash of a commit where the bug IS present
+                </p>
+              </div>
+              
               <div>
                 <label htmlFor="goodCommit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Good Commit Hash
@@ -280,24 +324,6 @@ export default function BisectSessionPage() {
                 </p>
               </div>
 
-              <div>
-                <label htmlFor="badCommit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bad Commit Hash
-                </label>
-                <input
-                  id="badCommit"
-                  type="text"
-                  value={badCommit}
-                  onChange={(e) => setBadCommit(e.target.value)}
-                  placeholder="def456ghi789..."
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
-                  disabled={starting}
-                  required
-                />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Enter the full commit hash of a commit where the bug IS present
-                </p>
-              </div>
 
               <button
                 type="submit"
