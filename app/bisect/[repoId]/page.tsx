@@ -30,13 +30,20 @@ export default function BisectSessionPage() {
   const [marking, setMarking] = useState(false);
   const [launching, setLaunching] = useState(false);
   const [launchUrl, setLaunchUrl] = useState<string | null>(null);
+  const [envVars, setEnvVars] = useState('');
+  const [showEnvVars, setShowEnvVars] = useState(false);
   const [goodCommit, setGoodCommit] = useState('');
   const [badCommit, setBadCommit] = useState('');
   console.log('good commit geoff', goodCommit);
   console.log('bad commit geoff', badCommit);
   console.log('all commits geoff', status?.allCommits);
+  
   useEffect(() => {
     fetchStatus();
+    const savedEnvVars = localStorage.getItem(`envVars_${repoId}`);
+    if (savedEnvVars) {
+      setEnvVars(savedEnvVars);
+    }
   }, [repoId]);
 
   const fetchStatus = async (showLoading = true) => {
@@ -138,6 +145,23 @@ export default function BisectSessionPage() {
     setLaunching(true);
     setError(null);
 
+    const envVarsObj: Record<string, string> = {};
+    if (envVars.trim()) {
+      envVars.split('\n').forEach(line => {
+        line = line.trim();
+        if (line && !line.startsWith('#')) {
+          const [key, ...valueParts] = line.split('=');
+          if (key && valueParts.length > 0) {
+            const value = valueParts.join('=').trim();
+            const cleanValue = value.replace(/^["']|["']$/g, '');
+            envVarsObj[key.trim()] = cleanValue;
+          }
+        }
+      });
+    }
+
+    localStorage.setItem(`envVars_${repoId}`, envVars);
+
     try {
       const response = await fetch('/api/bisect/launch', {
         method: 'POST',
@@ -147,6 +171,7 @@ export default function BisectSessionPage() {
         body: JSON.stringify({
           repoId,
           commitHash: status.currentCommit,
+          envVars: envVarsObj,
         }),
       });
 
@@ -293,6 +318,32 @@ export default function BisectSessionPage() {
 
             <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
               <div className="mb-4">
+                <button
+                  onClick={() => setShowEnvVars(!showEnvVars)}
+                  className="w-full mb-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors flex items-center justify-between"
+                >
+                  <span>Environment Variables (Optional)</span>
+                  <span>{showEnvVars ? '▼' : '▶'}</span>
+                </button>
+                
+                {showEnvVars && (
+                  <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Enter environment variables (one per line, format: KEY=value)
+                    </label>
+                    <textarea
+                      value={envVars}
+                      onChange={(e) => setEnvVars(e.target.value)}
+                      placeholder="DATABASE_URL=postgres://...&#10;API_KEY=secret123&#10;# Comments start with #"
+                      className="w-full px-3 py-2 text-sm font-mono border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent"
+                      rows={6}
+                    />
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      Values are saved per repository and reused across launches.
+                    </p>
+                  </div>
+                )}
+
                 <button
                   onClick={handleLaunch}
                   disabled={launching || !status.currentCommit}
