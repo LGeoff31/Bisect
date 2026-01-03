@@ -81,3 +81,48 @@ export async function POST(request: NextRequest) {
     });
 }
 ```
+
+Launches their app on an available port, at the specific commit location.
+```ts
+// /api/bisect/launch/route.ts
+export function findFreePort(startPort: number, endPort: number): Promise<number> {
+   for (let port = startPort; port <= endPort; port++) {
+      const isFree = await new Promise<boolean>((resolve) => {
+         server.listen(port, () => {
+            server.once('close'), () => resolve(true);
+            server.close();
+         });
+      };
+      if (isFree) return port;
+   throw new Error("No free port");
+}
+export async function POST(request: NextRequest) {
+   const { repoId, commitHash } = body;
+   const git = simpleGit(repoId);
+   await git.checkout([commitHash]);
+   const packageJsonPath = path.join(repoDir, 'package.json');
+   const installCommand = packageManager === 'pnpm' ? 'pnpm' : packageManager === 'yarn' ? 'yarn' : 'npm';
+   const installArgs = packageManager === 'pnpm' ? ['install'] : packageManager === 'yarn' ? ['install'] : ['install'];
+   // INSTALL all dependencies
+   const installProcess = spawn(installCommand, installArgs, {
+      cwd: repoDir,
+      stdio: 'pipe',
+      shell: true,
+    });
+   cont port = await findFreePort(3001, 3100);
+   command = 'npm';
+   args = ['run', 'dev'];
+   const child = spawn(command, args, {
+      cwd: repoDir,
+      env,
+      stdio: 'pipe',
+      shell: true,
+    });
+   return NextResponse.json({
+      port,
+      url: `http://localhost:${port}`,
+      proxyUrl: `/api/dev-server/proxy/${repoId}`,
+      message: 'Dev server starting...',
+    });
+}
+```
