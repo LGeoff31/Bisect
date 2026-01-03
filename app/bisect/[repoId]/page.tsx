@@ -37,6 +37,11 @@ export default function BisectSessionPage() {
   const [issueDescription, setIssueDescription] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<any>(null);
+  const [creatingFix, setCreatingFix] = useState(false);
+  const [fixIssueDescription, setFixIssueDescription] = useState('');
+  const [fixBranchName, setFixBranchName] = useState('');
+  const [fixResults, setFixResults] = useState<any>(null);
+  const [showFixForm, setShowFixForm] = useState(false);
   console.log('good commit geoff', goodCommit);
   console.log('bad commit geoff', badCommit);
   console.log('all commits geoff', status?.allCommits);
@@ -180,6 +185,45 @@ export default function BisectSessionPage() {
     }
   };
 
+  const handleCreateFix = async () => {
+    if (!status?.firstBadCommit || !fixIssueDescription.trim()) {
+      setError('Please provide an issue description for the fix');
+      return;
+    }
+
+    setCreatingFix(true);
+    setError(null);
+    setFixResults(null);
+
+    try {
+      const response = await fetch('/api/bisect/fix', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          repoId,
+          commitHash: status.firstBadCommit,
+          issueDescription: fixIssueDescription,
+          branchName: fixBranchName || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create fix');
+      }
+
+      setFixResults(data);
+      setShowFixForm(false);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+    } finally {
+      setCreatingFix(false);
+    }
+  };
+
   const handleLaunch = async () => {
     if (!status?.currentCommit) return;
 
@@ -296,7 +340,127 @@ export default function BisectSessionPage() {
               </code>
             </div>
 
+            {fixResults ? (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 mb-6">
+                <h3 className="text-lg font-bold text-green-900 dark:text-green-200 mb-4">
+                  ✓ Fix Created Successfully!
+                </h3>
+                <div className="space-y-2 mb-4">
+                  <div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Branch: </span>
+                    <code className="text-sm font-mono text-gray-900 dark:text-white">{fixResults.branchName}</code>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Commit: </span>
+                    <code className="text-sm font-mono text-gray-900 dark:text-white">{fixResults.commitHash.substring(0, 7)}</code>
+                  </div>
+                  {fixResults.summary && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Summary: </span>
+                      <p className="text-sm text-gray-900 dark:text-white">{fixResults.summary}</p>
+                    </div>
+                  )}
+                  {fixResults.fixes && fixResults.fixes.length > 0 && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Files Fixed: </span>
+                      <ul className="list-disc list-inside text-sm text-gray-900 dark:text-white mt-1">
+                        {fixResults.fixes.map((fix: any, idx: number) => (
+                          <li key={idx}>
+                            <code className="font-mono">{fix.file}</code> - {fix.explanation}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {fixResults.prUrl && (
+                    <div className="mt-4 pt-4 border-t border-green-200 dark:border-green-800">
+                      <a
+                        href={fixResults.prUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                        </svg>
+                        View Pull Request #{fixResults.prNumber}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : showFixForm ? (
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-6">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                  Create AI-Powered Fix
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="fixIssueDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Issue Description
+                    </label>
+                    <textarea
+                      id="fixIssueDescription"
+                      value={fixIssueDescription}
+                      onChange={(e) => setFixIssueDescription(e.target.value)}
+                      placeholder="Describe the bug that was introduced in this commit..."
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent"
+                      rows={4}
+                      disabled={creatingFix}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="fixBranchName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Branch Name (Optional)
+                    </label>
+                    <input
+                      id="fixBranchName"
+                      type="text"
+                      value={fixBranchName}
+                      onChange={(e) => setFixBranchName(e.target.value)}
+                      placeholder="fix/bug-abc123 (auto-generated if empty)"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
+                      disabled={creatingFix}
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleCreateFix}
+                      disabled={creatingFix || !fixIssueDescription.trim()}
+                      className="px-6 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {creatingFix ? '🤖 Creating Fix...' : '🤖 Create Fix'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowFixForm(false);
+                        setFixIssueDescription('');
+                        setFixBranchName('');
+                      }}
+                      disabled={creatingFix}
+                      className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-medium rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             <div className="flex gap-3 justify-center">
+              {!fixResults && (
+                <button
+                  onClick={() => {
+                    setShowFixForm(true);
+                    if (issueDescription) {
+                      setFixIssueDescription(issueDescription);
+                    }
+                  }}
+                  className="px-6 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 transition-colors"
+                >
+                  🤖 Create Fix
+                </button>
+              )}
               <button
                 onClick={() => router.push('/bisect')}
                 className="px-6 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
