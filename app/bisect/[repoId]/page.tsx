@@ -34,6 +34,9 @@ export default function BisectSessionPage() {
   const [showEnvVars, setShowEnvVars] = useState(false);
   const [goodCommit, setGoodCommit] = useState('');
   const [badCommit, setBadCommit] = useState('');
+  const [issueDescription, setIssueDescription] = useState('');
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState<any>(null);
   console.log('good commit geoff', goodCommit);
   console.log('bad commit geoff', badCommit);
   console.log('all commits geoff', status?.allCommits);
@@ -136,6 +139,44 @@ export default function BisectSessionPage() {
       setError(err.message || 'An error occurred');
     } finally {
       setMarking(false);
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (!goodCommit || !badCommit || !issueDescription.trim()) {
+      setError('Please provide issue description, good commit, and bad commit');
+      return;
+    }
+
+    setAnalyzing(true);
+    setError(null);
+    setAnalysisResults(null);
+
+    try {
+      const response = await fetch('/api/bisect/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          repoId,
+          issueDescription,
+          goodCommit,
+          badCommit,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to analyze commits');
+      }
+
+      setAnalysisResults(data);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+    } finally {
+      setAnalyzing(false);
     }
   };
 
@@ -381,15 +422,139 @@ export default function BisectSessionPage() {
           </>
         ) : (
           // No Active Session - Start Bisect Form
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
-            <div className="text-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                Start Git Bisect
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Provide a known good commit and a known bad commit to begin the bisect process.
-              </p>
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  AI-Powered Commit Analysis
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Describe the issue and let AI analyze commits to find the most likely culprit.
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label htmlFor="issueDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Issue Description
+                  </label>
+                  <textarea
+                    id="issueDescription"
+                    value={issueDescription}
+                    onChange={(e) => setIssueDescription(e.target.value)}
+                    placeholder="Describe the bug or issue you're trying to find. Be specific about what's broken, error messages, or unexpected behavior..."
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent"
+                    rows={4}
+                    disabled={analyzing}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="badCommitAnalyze" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Bad Commit Hash
+                  </label>
+                  <input
+                    id="badCommitAnalyze"
+                    type="text"
+                    value={badCommit}
+                    onChange={(e) => setBadCommit(e.target.value)}
+                    placeholder="def456ghi789..."
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
+                    disabled={analyzing}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="goodCommitAnalyze" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Good Commit Hash
+                  </label>
+                  <input
+                    id="goodCommitAnalyze"
+                    type="text"
+                    value={goodCommit}
+                    onChange={(e) => setGoodCommit(e.target.value)}
+                    placeholder="abc123def456..."
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
+                    disabled={analyzing}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAnalyze}
+                  disabled={analyzing || !goodCommit || !badCommit || !issueDescription.trim()}
+                  className="w-full px-4 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {analyzing ? '🤖 Analyzing commits...' : '🤖 Analyze Commits with AI'}
+                </button>
+              </div>
+
+              {analysisResults && (
+                <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                    Analysis Results ({analysisResults.totalCommits} commits analyzed)
+                  </h3>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {analysisResults.analyses.map((analysis: any, index: number) => (
+                      <div
+                        key={analysis.commitHash}
+                        className="p-4 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-mono text-gray-600 dark:text-gray-400">
+                                {analysis.commitHash.substring(0, 7)}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                analysis.likelihood >= 70
+                                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                  : analysis.likelihood >= 40
+                                  ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                  : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                              }`}>
+                                {analysis.likelihood}% likely
+                              </span>
+                            </div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                              {analysis.commitMessage.split('\n')[0]}
+                            </p>
+                            {analysis.filesChanged.length > 0 && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Files: {analysis.filesChanged.slice(0, 3).join(', ')}
+                                {analysis.filesChanged.length > 3 && ` +${analysis.filesChanged.length - 3} more`}
+                              </p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => {
+                              setGoodCommit(analysis.commitHash);
+                              setBadCommit(badCommit);
+                            }}
+                            className="ml-4 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                          >
+                            Use as Good
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                          {analysis.reasoning}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Start Git Bisect
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Or manually start bisect with a known good and bad commit.
+                </p>
+              </div>
 
             <form onSubmit={handleStartBisect} className="space-y-6">
 
@@ -440,6 +605,7 @@ export default function BisectSessionPage() {
                 {starting ? 'Starting bisect...' : 'Start Bisect'}
               </button>
             </form>
+            </div>
           </div>
         )}
       </div>
