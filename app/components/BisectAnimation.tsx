@@ -20,7 +20,7 @@ export default function BisectAnimation() {
     return Array.from({ length: 10 }, (_, i) => ({
       id: i + 1,
       hash: hashes[i],
-      status: 'unknown' as const,
+      status: 'unknown' as 'unknown' | 'good' | 'bad' | 'testing',
       isFirstBad: i === 6,
       scale: 1,
       glow: false,
