@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
 
 Runs the source code of each commit through AI to detect likelyhood of it introducing the issue.
 ```ts
-// /api/bisect/launch/route.ts
+// /api/bisect/analyze/route.ts
 You are analyzing a git commit to determine if it might have caused a bug.
 export async function POST(request: NextRequest) {
    const { repoId, issueDescription, goodCommit, badCommit } = body;
@@ -192,4 +192,94 @@ export async function POST(request: NextRequest) {
        });
 }
 ```
+
+Creates a pull request for the fix through AI
+```ts
+// /api/bisect/fix/route.ts
+You are analyzing a git commit to determine if it might have caused a bug.
+export async function POST(request: NextRequest) {
+   const { epoId, commitHash, issueDescription, branchName } = body;
+   const git = simpleGit(repoId);
+   const commitLog = await git.log({ from: commitHash, to: commitHash, maxCount: 1 });
+   const commitMessage = commitLog.latest?.message;
+   const parentHash = await git.raw(['rev-parse', `${commitHash}^`]).then(r => r.trim()).catch(() => null);
+   const commitDiff = parentHash 
+      ? await git.diff([parentHash, commitHash])
+      : await git.show([commitHash]);
+   const prompt = `You are a code expert fixing a bug. A commit introduced a bug, and you need to generate a fix.
+   ISSUE DESCRIPTION:
+   ${issueDescription}
+   
+   BUG-INTRODUCING COMMIT:
+   - Hash: ${commitHash.substring(0, 7)}
+   - Message: ${commitMessage}
+   - Files Changed: ${filesChanged.join(', ')}
+
+   Your task:
+   1. Analyze the code changes that introduced the bug
+   2. Understand what the bug is based on the issue description
+   3. Generate a fix that corrects the bug
+
+   Respond in JSON format with the following structure:
+   {
+     "fixes": [
+       {
+         "file": "<relative file path from repo root>",
+         "content": "<complete fixed file content>",
+         "explanation": "<brief explanation of what was fixed>"
+       }
+     ],
+     "summary": "<overall summary of the fix>"
+   }
+   '
+   const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a code expert specializing in bug fixes. Analyze bug-introducing commits and generate complete, correct fixes. Always respond with valid JSON containing complete file contents.',
+        },
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
+    });
+   const responseContent = completion.choices[0]?.message?.content || '{}';
+   const fixData = JSON.parse(responseContent);
+   const fixBranchName = branchName || `fix/bug-${commitHash.substring(0, 7)}`;
+   await git.checkout([parentHash]);
+   await git.checkout(['-b', fixBranchName]);
+   const appliedFixes = [];
+   for (const fix of fixData.fixed) {
+      const filePath = path.join(repoDir, fix.file);
+      await fs.writeFile(filePath, fix.content, 'utf8');
+      appliedFixes.push({
+          file: fix.file,
+          explanation: fix.explanation,
+        });
+   }
+
+   await git.add(['.']);
+   const fixCommitMessage = `Fix: ${fixData.summary || 'Fix bug introduced in commit ' + commitHash.substring(0, 7)}\n\nFixes bug introduced in commit ${commitHash}\nIssue: ${issueDescription}`;
+   await git.commit(fixCommitMessage);
+   await git.push(['origin', fixBranchName, '--set-upstream']);
+   return NextResponse.json({
+      success: true,
+      branchName: fixBranchName,
+      commitHash: fixCommitHash,
+      fixes: appliedFixes,
+      summary: fixData.summary,
+      message: prUrl 
+        ? `Fix created and PR opened: ${prUrl}`
+        : remoteUrl
+        ? `Fix created in branch ${fixBranchName}. Branch pushed to remote.`
+        : `Fix created in branch ${fixBranchName}`,
+      remoteUrl,
+    });
+}
+```
+
 
