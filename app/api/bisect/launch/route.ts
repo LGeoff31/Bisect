@@ -23,7 +23,7 @@ async function findFreePort(startPort: number, endPort: number): Promise<number>
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { repoId, commitHash } = body;
+    const { repoId, commitHash, envVars } = body;
 
     if (!repoId || !commitHash) {
       return NextResponse.json(
@@ -125,7 +125,11 @@ export async function POST(request: NextRequest) {
     const scripts = packageJson.scripts || {};
     let command: string;
     let args: string[];
-    const env = { ...process.env, PORT: port.toString() };
+    const env = { 
+      ...process.env, 
+      ...(envVars || {}),
+      PORT: port.toString() 
+    };
 
     if (packageJson.dependencies?.next) {
       command = 'npx';
