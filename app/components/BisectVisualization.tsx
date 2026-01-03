@@ -53,27 +53,43 @@ export default function BisectVisualization({
     .map(({ index }) => index);
   const earliestBadIndex = badIndices.length > 0 ? Math.min(...badIndices) : originalBadIndex;
 
-  // Use the narrowing range for the gradient overlay
+  const reversedCommits = [...allCommits].reverse();
+  
+  const reversedLatestGoodIndex = latestGoodIndex !== -1 ? allCommits.length - 1 - latestGoodIndex : -1;
+  const reversedEarliestBadIndex = earliestBadIndex !== -1 ? allCommits.length - 1 - earliestBadIndex : -1;
+
   const searchRange = allCommits.length > 0 && latestGoodIndex !== -1 && earliestBadIndex !== -1 && latestGoodIndex < earliestBadIndex
     ? { 
-        start: latestGoodIndex,  // Most recent good mark
-        end: earliestBadIndex,   // Most recent bad mark
+        start: reversedEarliestBadIndex,
+        end: reversedLatestGoodIndex,
       }
     : null;
 
   const itemHeight = 76;
 
-  const getCommitStatus = (commitHash: string): 'unknown' | 'good' | 'bad' | 'testing' => {
+  const getCommitStatus = (commitHash: string, commitIndex: number): 'unknown' | 'good' | 'bad' | 'testing' => {
+    const originalIndex = allCommits.length - 1 - commitIndex;
+    const isInitialGood = commitHash === initialGoodCommit;
+    const isInitialBad = commitHash === initialBadCommit;
+    
     if (complete && commitHash === firstBadCommit) {
       return 'bad';
     }
     if (!complete && commitHash === currentCommit) {
       return 'testing';
     }
-    if (goodCommits.includes(commitHash) || commitHash === initialGoodCommit) {
+    
+    const isInRange = searchRange && latestGoodIndex !== -1 && earliestBadIndex !== -1 && 
+                      originalIndex >= latestGoodIndex && originalIndex <= earliestBadIndex;
+    
+    if (!isInRange) {
+      return 'unknown';
+    }
+    
+    if (isInitialGood || goodCommits.includes(commitHash)) {
       return 'good';
     }
-    if (badCommits.includes(commitHash) || commitHash === initialBadCommit) {
+    if (isInitialBad || badCommits.includes(commitHash)) {
       return 'bad';
     }
     return 'unknown';
@@ -123,8 +139,8 @@ export default function BisectVisualization({
           <div className="relative flex flex-col gap-5">
             <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-gray-300 via-gray-200 to-gray-300 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700" />
             
-            {allCommits.map((commit, index) => {
-              const status = getCommitStatus(commit.hash);
+            {reversedCommits.map((commit, index) => {
+              const status = getCommitStatus(commit.hash, index);
               const isFirstBad = complete && commit.hash === firstBadCommit;
               const isCurrent = !complete && commit.hash === currentCommit;
 

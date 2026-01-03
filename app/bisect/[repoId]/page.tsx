@@ -28,17 +28,22 @@ export default function BisectSessionPage() {
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [marking, setMarking] = useState(false);
+  const [launching, setLaunching] = useState(false);
+  const [launchUrl, setLaunchUrl] = useState<string | null>(null);
   const [goodCommit, setGoodCommit] = useState('');
   const [badCommit, setBadCommit] = useState('');
   console.log('good commit geoff', goodCommit);
   console.log('bad commit geoff', badCommit);
+  console.log('all commits geoff', status?.allCommits);
   useEffect(() => {
     fetchStatus();
   }, [repoId]);
 
-  const fetchStatus = async () => {
+  const fetchStatus = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       setError(null);
       const response = await fetch(`/api/bisect/status?repoId=${repoId}`);
       const data = await response.json();
@@ -51,7 +56,9 @@ export default function BisectSessionPage() {
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
@@ -116,12 +123,47 @@ export default function BisectSessionPage() {
         throw new Error(data.error || 'Failed to mark commit');
       }
 
-      // Refresh status
-      await fetchStatus();
+      await new Promise(resolve => setTimeout(resolve, 800));
+      await fetchStatus(false);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
       setMarking(false);
+    }
+  };
+
+  const handleLaunch = async () => {
+    if (!status?.currentCommit) return;
+
+    setLaunching(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/bisect/launch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          repoId,
+          commitHash: status.currentCommit,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to launch');
+      }
+
+      setLaunchUrl(data.url);
+      if (data.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+    } finally {
+      setLaunching(false);
     }
   };
 
@@ -250,6 +292,20 @@ export default function BisectSessionPage() {
             </div>
 
             <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div className="mb-4">
+                <button
+                  onClick={handleLaunch}
+                  disabled={launching || !status.currentCommit}
+                  className="w-full px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+                >
+                  {launching ? 'Launching...' : '🚀 Launch App'}
+                </button>
+                {launchUrl && (
+                  <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                    App running at: <a href={launchUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">{launchUrl}</a>
+                  </p>
+                )}
+              </div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center">
                 Test this commit. Is the bug present?
               </p>
