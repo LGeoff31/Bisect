@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-Launches their app on an available port, at the specific commit location.
+Launch their app on an available port, checked out at the specific commit.
 ```ts
 // /api/bisect/launch/route.ts
 export function findFreePort(startPort: number, endPort: number): Promise<number> {
@@ -126,3 +126,70 @@ export async function POST(request: NextRequest) {
     });
 }
 ```
+
+Runs the source code of each commit through AI to detect likelyhood of it introducing the issue.
+```ts
+// /api/bisect/launch/route.ts
+You are analyzing a git commit to determine if it might have caused a bug.
+export async function POST(request: NextRequest) {
+   const { repoId, issueDescription, goodCommit, badCommit } = body;
+   const git = simpleGit(repoId);
+   const logs = await git.log({from: goodCommit, to: badCommit});
+   const commits = logs.all;
+   const analyses: CommitAnalysis[] = [];
+
+   for (let i = 0; i < commits.length; i++) {
+      const commit = commits[i];
+      const diff = git.show([commit.hash]);
+      CONST prompt = ```You are analyzing a git commit to determine if it might have caused a bug.
+
+      ISSUE DESCRIPTION:
+      ${issueDescription}
+
+      COMMIT INFORMATION:
+      - Hash: ${commit.hash.substring(0, 7)}
+      - Message: ${commit.message}
+      - Date: ${commit.date}
+      - Files Changed: ${filesChanged.join(', ')}
+
+      Analyze whether this commit's changes could have caused the issue described above.
+      Respond in JSON format:
+      {
+        "likelihood": <number between 0-100, where 0 = definitely not, 100 = definitely yes>,
+        "reasoning": "<brief explanation of why this commit might or might not cause the issue>"
+      }`;
+
+      const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a code analysis expert. Analyze git commits to determine if they could cause bugs. Always respond with valid JSON.',
+            },
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          temperature: 0.3,
+          response_format: { type: 'json_object' },
+        });
+      const responseContent = completion.choices[0]?.message?.content || '{}';
+      const analysis = JSON.parse(responseContent);
+      analyses.push({
+          commitHash: commit.hash,
+          commitMessage: commit.message,
+          commitDate: commit.date,
+          likelihood: analysis.likelihood || 0,
+          reasoning: analysis.reasoning || 'No reasoning provided',
+          filesChanged,
+        });
+   }
+   analyses.sort((a, b) => b.likelihood - a.likelihood);
+   return NextResponse.json({
+         analyses,
+         totalCommits: commits.length,
+       });
+}
+```
+
