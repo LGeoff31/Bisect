@@ -151,7 +151,16 @@ export default function BisectAnimation() {
     return () => clearInterval(interval);
   }, [mounted]);
 
-  const getCommitColor = (commit: Commit) => {
+  const isInSearchRange = (index: number) => {
+    if (!searchRange) return true; // If no range set, show all
+    return index >= searchRange.start && index <= searchRange.end;
+  };
+
+  const getCommitColor = (commit: Commit, index: number) => {
+    // If outside search range, show as unknown
+    if (searchRange && !isInSearchRange(index) && commit.status !== 'testing') {
+      return 'bg-gray-300 dark:bg-gray-700';
+    }
     if (commit.status === 'good') return 'bg-emerald-500 dark:bg-emerald-600';
     if (commit.status === 'bad') {
       return commit.isFirstBad 
@@ -162,7 +171,11 @@ export default function BisectAnimation() {
     return 'bg-gray-300 dark:bg-gray-700';
   };
 
-  const getCommitShadow = (commit: Commit) => {
+  const getCommitShadow = (commit: Commit, index: number) => {
+    // If outside search range, no special shadow
+    if (searchRange && !isInSearchRange(index) && commit.status !== 'testing') {
+      return 'shadow-sm';
+    }
     if (commit.glow && commit.status === 'good') {
       return 'shadow-lg shadow-emerald-500/50 dark:shadow-emerald-600/50';
     }
@@ -201,7 +214,7 @@ export default function BisectAnimation() {
                 className="relative flex items-center gap-5 z-10 group"
               >
                 <div className="relative z-20">
-                  {commit.glow && (
+                  {commit.glow && isInSearchRange(index) && (
                     <div 
                       className={`absolute inset-0 rounded-full animate-pulse ${
                         commit.status === 'good' 
@@ -217,7 +230,7 @@ export default function BisectAnimation() {
                   
 
                   <div
-                    className={`relative w-14 h-14 ${getCommitColor(commit)} ${getCommitShadow(commit)} rounded-full transition-all duration-300 ease-out flex items-center justify-center text-white font-semibold transform ring-2 ring-white/20 dark:ring-gray-800/30 ${
+                    className={`relative w-14 h-14 ${getCommitColor(commit, index)} ${getCommitShadow(commit, index)} rounded-full transition-all duration-300 ease-out flex items-center justify-center text-white font-semibold transform ring-2 ring-white/20 dark:ring-gray-800/30 ${
                       commit.status === 'testing' ? 'opacity-80 animate-pulse' : 'opacity-100'
                     }`}
                     style={{
@@ -225,19 +238,19 @@ export default function BisectAnimation() {
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
-                    {commit.status === 'good' && (
+                    {commit.status === 'good' && isInSearchRange(index) && (
                       <span className="text-lg">✓</span>
                     )}
-                    {commit.status === 'bad' && commit.isFirstBad && (
+                    {commit.status === 'bad' && commit.isFirstBad && isInSearchRange(index) && (
                       <span className="text-xl font-bold">⚠</span>
                     )}
-                    {commit.status === 'bad' && !commit.isFirstBad && (
+                    {commit.status === 'bad' && !commit.isFirstBad && isInSearchRange(index) && (
                       <span className="text-lg">✗</span>
                     )}
                     {commit.status === 'testing' && (
                       <span className="text-lg animate-spin">⟳</span>
                     )}
-                    {commit.status === 'unknown' && (
+                    {(commit.status === 'unknown' || (searchRange && !isInSearchRange(index) && commit.status !== 'testing')) && (
                       <div className="w-2 h-2 bg-white/60 rounded-full" />
                     )}
                   </div>
@@ -245,16 +258,16 @@ export default function BisectAnimation() {
 
                 <div className="flex-1 z-20">
                   <div className={`text-sm font-mono tracking-wide transition-colors duration-300 ${
-                    commit.status === 'good' 
+                    commit.status === 'good' && isInSearchRange(index)
                       ? 'text-emerald-700 dark:text-emerald-400 font-medium' 
-                      : commit.status === 'bad'
+                      : commit.status === 'bad' && isInSearchRange(index)
                       ? 'text-red-700 dark:text-red-400 font-medium'
                       : commit.status === 'testing'
                       ? 'text-amber-700 dark:text-amber-400 font-medium'
                       : 'text-gray-600 dark:text-gray-400'
                   }`}>
                     {commit.hash}
-                    {commit.status === 'bad' && commit.isFirstBad && (
+                    {commit.status === 'bad' && commit.isFirstBad && isInSearchRange(index) && (
                       <span className="ml-2 text-xs font-semibold px-2 py-0.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded">
                         FIRST BAD COMMIT
                       </span>
