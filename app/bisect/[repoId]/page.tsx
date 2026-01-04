@@ -42,6 +42,7 @@ export default function BisectSessionPage() {
   const [fixBranchName, setFixBranchName] = useState('');
   const [fixResults, setFixResults] = useState<any>(null);
   const [showFixForm, setShowFixForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<'bisect' | 'ai'>('bisect');
   console.log('good commit geoff', goodCommit);
   console.log('bad commit geoff', badCommit);
   console.log('all commits geoff', status?.allCommits);
@@ -427,9 +428,9 @@ export default function BisectSessionPage() {
                     <button
                       onClick={handleCreateFix}
                       disabled={creatingFix || !fixIssueDescription.trim()}
-                      className="px-6 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {creatingFix ? '🤖 Creating Fix...' : '🤖 Create Fix'}
+                      {creatingFix ? 'Creating Fix...' : 'Create Fix'}
                     </button>
                     <button
                       onClick={() => {
@@ -456,9 +457,9 @@ export default function BisectSessionPage() {
                       setFixIssueDescription(issueDescription);
                     }
                   }}
-                  className="px-6 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 transition-colors"
+                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
                 >
-                  🤖 Create Fix
+                  Create Fix
                 </button>
               )}
               <button
@@ -554,7 +555,7 @@ export default function BisectSessionPage() {
                   disabled={launching || !status.currentCommit}
                   className="w-full px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
                 >
-                  {launching ? 'Launching...' : '🚀 Launch App'}
+                  {launching ? 'Launching...' : 'Launch App'}
                 </button>
                 {launchUrl && (
                   <p className="text-xs text-center text-gray-500 dark:text-gray-400">
@@ -587,15 +588,103 @@ export default function BisectSessionPage() {
         ) : (
           // No Active Session - Start Bisect Form
           <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
-              <div className="text-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  AI-Powered Commit Analysis
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Describe the issue and let AI analyze commits to find the most likely culprit.
+            {/* Tabs */}
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg">
+              <div className="flex border-b border-gray-200 dark:border-gray-800">
+                <button
+                  onClick={() => setActiveTab('bisect')}
+                  className={`flex-1 px-6 py-3 text-sm font-medium transition-colors text-gray-900 dark:text-white ${
+                    activeTab === 'bisect'
+                      ? 'border-b-2 border-gray-900 dark:border-white'
+                      : ''
+                  }`}
+                >
+                  Start Git Bisect
+                </button>
+                <button
+                  onClick={() => setActiveTab('ai')}
+                  className={`flex-1 px-6 py-3 text-sm font-medium transition-colors text-gray-900 dark:text-white ${
+                    activeTab === 'ai'
+                      ? 'border-b-2 border-gray-900 dark:border-white'
+                      : ''
+                  }`}
+                >
+                  AI-Powered Analysis
+                </button>
+              </div>
+            </div>
+
+            {activeTab === 'bisect' ? (
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    Start Git Bisect
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Manually start bisect with a known good and bad commit.
+                  </p>
+                </div>
+
+                <form onSubmit={handleStartBisect} className="space-y-6">
+
+            <div>
+                <label htmlFor="badCommit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Bad Commit Hash
+                </label>
+                <input
+                  id="badCommit"
+                  type="text"
+                  value={badCommit}
+                  onChange={(e) => setBadCommit(e.target.value)}
+                  placeholder="def456ghi789..."
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
+                  disabled={starting}
+                  required
+                />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Enter the full commit hash of a commit where the bug IS present
                 </p>
               </div>
+              
+              <div>
+                <label htmlFor="goodCommit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Good Commit Hash
+                </label>
+                <input
+                  id="goodCommit"
+                  type="text"
+                  value={goodCommit}
+                  onChange={(e) => setGoodCommit(e.target.value)}
+                  placeholder="abc123def456..."
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
+                  disabled={starting}
+                  required
+                />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Enter the full commit hash of a commit where the bug is NOT present
+                </p>
+              </div>
+
+
+                  <button
+                    type="submit"
+                    disabled={starting || !goodCommit || !badCommit}
+                    className="w-full px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {starting ? 'Starting bisect...' : 'Start Bisect'}
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    AI-Powered Commit Analysis
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Describe the issue and let AI analyze commits to find the most likely culprit.
+                  </p>
+                </div>
 
               <div className="space-y-4 mb-6">
                 <div>
@@ -647,9 +736,9 @@ export default function BisectSessionPage() {
                   type="button"
                   onClick={handleAnalyze}
                   disabled={analyzing || !goodCommit || !badCommit || !issueDescription.trim()}
-                  className="w-full px-4 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {analyzing ? '🤖 Analyzing commits...' : '🤖 Analyze Commits with AI'}
+                  {analyzing ? 'Analyzing commits...' : 'Analyze Commits'}
                 </button>
               </div>
 
@@ -708,68 +797,8 @@ export default function BisectSessionPage() {
                   </div>
                 </div>
               )}
-            </div>
-
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
-              <div className="text-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  Start Git Bisect
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Or manually start bisect with a known good and bad commit.
-                </p>
               </div>
-
-            <form onSubmit={handleStartBisect} className="space-y-6">
-
-            <div>
-                <label htmlFor="badCommit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bad Commit Hash
-                </label>
-                <input
-                  id="badCommit"
-                  type="text"
-                  value={badCommit}
-                  onChange={(e) => setBadCommit(e.target.value)}
-                  placeholder="def456ghi789..."
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
-                  disabled={starting}
-                  required
-                />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Enter the full commit hash of a commit where the bug IS present
-                </p>
-              </div>
-              
-              <div>
-                <label htmlFor="goodCommit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Good Commit Hash
-                </label>
-                <input
-                  id="goodCommit"
-                  type="text"
-                  value={goodCommit}
-                  onChange={(e) => setGoodCommit(e.target.value)}
-                  placeholder="abc123def456..."
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
-                  disabled={starting}
-                  required
-                />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Enter the full commit hash of a commit where the bug is NOT present
-                </p>
-              </div>
-
-
-              <button
-                type="submit"
-                disabled={starting || !goodCommit || !badCommit}
-                className="w-full px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {starting ? 'Starting bisect...' : 'Start Bisect'}
-              </button>
-            </form>
-            </div>
+            )}
           </div>
         )}
       </div>

@@ -5,6 +5,9 @@ import { useState, useEffect } from 'react';
 interface Commit {
   id: number;
   hash: string;
+  message: string;
+  author: string;
+  date: string;
   status: 'unknown' | 'good' | 'bad' | 'testing';
   isFirstBad: boolean;
   scale?: number;
@@ -13,13 +16,24 @@ interface Commit {
 
 export default function BisectAnimation() {
   const initializeCommits = () => {
-    const hashes = [
-      '12e23', '4f5a6', 'c7d89', '01234', '789ab',
-      'ef012', '56789', 'cdef0', '34567', 'abcde'
+    const commitData = [
+      { hash: '12e23', message: 'Add user authentication', author: 'LGeoff31', date: 'Sep 2, 2025' },
+      { hash: '4f5a6', message: 'Fix login validation', author: 'BlackGuard1216', date: 'Sep 1, 2025' },
+      { hash: 'c7d89', message: 'Update API endpoints', author: 'Tlee8614', date: 'Aug 30, 2025' },
+      { hash: '01234', message: 'Refactor database queries', author: 'CodeNinja42', date: 'Aug 28, 2025' },
+      { hash: '789ab', message: 'Improve error handling', author: 'LGeoff31', date: 'Aug 25, 2025' },
+      { hash: 'ef012', message: 'Update navbar styling', author: 'ShadowDev99', date: 'Aug 24, 2025' },
+      { hash: '56789', message: 'Fix navbar size issue', author: 'LGeoff31', date: 'Aug 23, 2025' },
+      { hash: 'cdef0', message: 'Add dark mode support', author: 'Tlee8614', date: 'Aug 20, 2025' },
+      { hash: '34567', message: 'Optimize image loading', author: 'BlackGuard1216', date: 'Aug 18, 2025' },
+      { hash: 'abcde', message: 'Update dependencies', author: 'LGeoff31', date: 'Aug 15, 2025' },
     ];
-    return Array.from({ length: 10 }, (_, i) => ({
+    return commitData.map((data, i) => ({
       id: i + 1,
-      hash: hashes[i],
+      hash: data.hash,
+      message: data.message,
+      author: data.author,
+      date: data.date,
       status: 'unknown' as 'unknown' | 'good' | 'bad' | 'testing',
       isFirstBad: i === 6,
       scale: 1,
@@ -257,18 +271,25 @@ export default function BisectAnimation() {
                 </div>
 
                 <div className="flex-1 z-20">
-                  <div className={`text-sm font-mono tracking-wide transition-colors duration-300 ${
+                  <div className={`text-sm transition-colors duration-300 ${
                     commit.status === 'good' && isInSearchRange(index)
-                      ? 'text-emerald-700 dark:text-emerald-400 font-medium' 
+                      ? 'text-emerald-700 dark:text-emerald-400' 
                       : commit.status === 'bad' && isInSearchRange(index)
-                      ? 'text-red-700 dark:text-red-400 font-medium'
+                      ? 'text-red-700 dark:text-red-400'
                       : commit.status === 'testing'
-                      ? 'text-amber-700 dark:text-amber-400 font-medium'
+                      ? 'text-amber-700 dark:text-amber-400'
                       : 'text-gray-600 dark:text-gray-400'
                   }`}>
-                    {commit.hash}
+                    <div className="font-medium mb-1">{commit.message}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                      <span>{commit.author}</span>
+                      <span>•</span>
+                      <span>{commit.date}</span>
+                      <span>•</span>
+                      <span className="font-mono">{commit.hash}</span>
+                    </div>
                     {commit.status === 'bad' && commit.isFirstBad && isInSearchRange(index) && (
-                      <span className="ml-2 text-xs font-semibold px-2 py-0.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded">
+                      <span className="mt-1 inline-block text-xs font-semibold px-2 py-0.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded">
                         FIRST BAD COMMIT
                       </span>
                     )}
