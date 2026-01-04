@@ -134,6 +134,14 @@ export default function BisectAnimation() {
         setSearchRange({ start: 5, end: 6 });
       },
       () => {
+        // Reset all commits to unknown except the first bad one
+        commits.forEach((c, i) => {
+          if (i !== 6) {
+            c.status = 'unknown';
+            c.scale = 1;
+            c.glow = false;
+          }
+        });
         commits[6].status = 'bad';
         commits[6].isFirstBad = true;
         commits[6].scale = 1.05;
@@ -171,8 +179,15 @@ export default function BisectAnimation() {
   };
 
   const getCommitColor = (commit: Commit, index: number) => {
+    // If bisect is complete (no search range), only show first bad commit
+    if (!searchRange) {
+      if (commit.isFirstBad) {
+        return 'bg-rose-500 dark:bg-rose-600';
+      }
+      return 'bg-gray-300 dark:bg-gray-700';
+    }
     // If outside search range, show as unknown
-    if (searchRange && !isInSearchRange(index) && commit.status !== 'testing') {
+    if (!isInSearchRange(index) && commit.status !== 'testing') {
       return 'bg-gray-300 dark:bg-gray-700';
     }
     if (commit.status === 'good') return 'bg-emerald-500 dark:bg-emerald-600';
@@ -186,8 +201,15 @@ export default function BisectAnimation() {
   };
 
   const getCommitShadow = (commit: Commit, index: number) => {
+    // If bisect is complete (no search range), only first bad commit has shadow
+    if (!searchRange) {
+      if (commit.isFirstBad && commit.glow) {
+        return 'shadow-lg shadow-rose-500/50 dark:shadow-rose-600/50';
+      }
+      return 'shadow-sm';
+    }
     // If outside search range, no special shadow
-    if (searchRange && !isInSearchRange(index) && commit.status !== 'testing') {
+    if (!isInSearchRange(index) && commit.status !== 'testing') {
       return 'shadow-sm';
     }
     if (commit.glow && commit.status === 'good') {
@@ -228,7 +250,7 @@ export default function BisectAnimation() {
                 className="relative flex items-center gap-5 z-10 group"
               >
                 <div className="relative z-20">
-                  {commit.glow && isInSearchRange(index) && (
+                  {commit.glow && (searchRange ? isInSearchRange(index) : commit.isFirstBad) && (
                     <div 
                       className={`absolute inset-0 rounded-full animate-pulse ${
                         commit.status === 'good' 
@@ -252,19 +274,19 @@ export default function BisectAnimation() {
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                   >
-                    {commit.status === 'good' && isInSearchRange(index) && (
+                    {commit.status === 'good' && (searchRange ? isInSearchRange(index) : false) && (
                       <span className="text-lg">✓</span>
                     )}
-                    {commit.status === 'bad' && commit.isFirstBad && isInSearchRange(index) && (
+                    {commit.status === 'bad' && commit.isFirstBad && (searchRange ? isInSearchRange(index) : true) && (
                       <span className="text-xl font-bold">⚠</span>
                     )}
-                    {commit.status === 'bad' && !commit.isFirstBad && isInSearchRange(index) && (
+                    {commit.status === 'bad' && !commit.isFirstBad && (searchRange ? isInSearchRange(index) : false) && (
                       <span className="text-lg">✗</span>
                     )}
                     {commit.status === 'testing' && (
                       <span className="text-lg animate-spin">⟳</span>
                     )}
-                    {(commit.status === 'unknown' || (searchRange && !isInSearchRange(index) && commit.status !== 'testing')) && (
+                    {(commit.status === 'unknown' || (searchRange && !isInSearchRange(index) && commit.status !== 'testing') || (!searchRange && !commit.isFirstBad)) && (
                       <div className="w-2 h-2 bg-white/60 rounded-full" />
                     )}
                   </div>
@@ -272,9 +294,11 @@ export default function BisectAnimation() {
 
                 <div className="flex-1 z-20">
                   <div className={`text-sm transition-colors duration-300 ${
-                    commit.status === 'good' && isInSearchRange(index)
+                    commit.status === 'good' && (searchRange ? isInSearchRange(index) : false)
                       ? 'text-emerald-700 dark:text-emerald-400' 
-                      : commit.status === 'bad' && isInSearchRange(index)
+                      : commit.status === 'bad' && commit.isFirstBad && (searchRange ? isInSearchRange(index) : true)
+                      ? 'text-red-700 dark:text-red-400'
+                      : commit.status === 'bad' && !commit.isFirstBad && (searchRange ? isInSearchRange(index) : false)
                       ? 'text-red-700 dark:text-red-400'
                       : commit.status === 'testing'
                       ? 'text-amber-700 dark:text-amber-400'
@@ -288,7 +312,7 @@ export default function BisectAnimation() {
                       <span>•</span>
                       <span className="font-mono">{commit.hash}</span>
                     </div>
-                    {commit.status === 'bad' && commit.isFirstBad && isInSearchRange(index) && (
+                    {commit.status === 'bad' && commit.isFirstBad && (searchRange ? isInSearchRange(index) : true) && (
                       <span className="mt-1 inline-block text-xs font-semibold px-2 py-0.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded">
                         FIRST BAD COMMIT
                       </span>
