@@ -1,6 +1,6 @@
 # Bisect
 
-<img width="1919" height="902" alt="image" src="https://github.com/user-attachments/assets/c84e0d6d-cf5b-4a88-a224-c6ab9168b89e" />
+<img width="1918" height="903" alt="image" src="https://github.com/user-attachments/assets/ca11bb59-ebe7-49d1-9467-37651881750b" />
 
 ## Table of Contents
 
