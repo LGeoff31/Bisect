@@ -8,14 +8,6 @@ export default function Navigation() {
           <Link href="/" className="text-xl font-bold text-gray-900 dark:text-white">
             Git Bisect Tool
           </Link>
-          <div className="flex gap-4">
-            <Link
-              href="/bisect"
-              className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-            >
-              Start Bisect
-            </Link>
-          </div>
         </div>
       </div>
     </nav>
