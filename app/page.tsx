@@ -4,26 +4,39 @@ import BisectAnimation from './components/BisectAnimation';
 export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
-      <section>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
-                Git Bisect Tool
-              </h1>
-              <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
-                A web-based interface for git bisect operations. Identify the exact commit that introduced a bug by testing your application at different points in your git history.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+        
+        <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-tight">
+                  Find Bugs
+                  <span className="block bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+                    Faster
+                  </span>
+                </h1>
+                <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl">
+                  Identify the commit that introduced a bug. Then put up a fix.
+                </p>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/bisect"
-                  className="px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium rounded-md transition-colors hover:bg-gray-800 dark:hover:bg-gray-100"
+                  className="group px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold rounded-lg transition-all hover:bg-gray-800 dark:hover:bg-gray-100 hover:shadow-xl hover:scale-105 flex items-center justify-center gap-2"
                 >
                   Start Bisect
+                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
                 </Link>
                 <Link
                   href="/docs"
-                  className="px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-md transition-colors hover:bg-gray-50 dark:hover:bg-gray-900"
+                  className="px-8 py-4 border-2 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-all hover:bg-gray-50 dark:hover:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-600"
                 >
                   Documentation
                 </Link>
@@ -31,11 +44,17 @@ export default function Home() {
             </div>
             
             <div className="lg:pl-8">
-              <BisectAnimation />
+              <div className="relative">
+                <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-2xl blur-2xl opacity-50" />
+                <div className="relative bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-xl">
+                  <BisectAnimation />
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
     </div>
   );
 }
