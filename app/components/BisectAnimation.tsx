@@ -35,7 +35,7 @@ export default function BisectAnimation() {
       author: data.author,
       date: data.date,
       status: 'unknown' as 'unknown' | 'good' | 'bad' | 'testing',
-      isFirstBad: i === 6,
+      isFirstBad: false,
       scale: 1,
       glow: false,
     }));
@@ -292,7 +292,7 @@ export default function BisectAnimation() {
                   </div>
                 </div>
 
-                <div className="flex-1 z-20">
+                <div className="flex-1 z-20 flex items-center justify-between gap-4">
                   <div className={`text-sm transition-colors duration-300 ${
                     commit.status === 'good' && (searchRange ? isInSearchRange(index) : false)
                       ? 'text-emerald-700 dark:text-emerald-400' 
@@ -312,12 +312,12 @@ export default function BisectAnimation() {
                       <span>•</span>
                       <span className="font-mono">{commit.hash}</span>
                     </div>
-                    {commit.status === 'bad' && commit.isFirstBad && (searchRange ? isInSearchRange(index) : true) && (
-                      <span className="mt-1 inline-block text-xs font-semibold px-2 py-0.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded">
-                        FIRST BAD COMMIT
-                      </span>
-                    )}
                   </div>
+                  {commit.status === 'bad' && commit.isFirstBad && (searchRange ? isInSearchRange(index) : true) && (
+                    <span className="text-xs font-semibold px-2 py-0.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 rounded whitespace-nowrap flex-shrink-0">
+                      FIRST BAD COMMIT
+                    </span>
+                  )}
                 </div>
 
                 {highlightIndex === index && (
