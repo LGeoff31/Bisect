@@ -58,12 +58,34 @@ export default function BisectVisualization({
   const reversedLatestGoodIndex = latestGoodIndex !== -1 ? allCommits.length - 1 - latestGoodIndex : -1;
   const reversedEarliestBadIndex = earliestBadIndex !== -1 ? allCommits.length - 1 - earliestBadIndex : -1;
 
-  const searchRange = allCommits.length > 0 && latestGoodIndex !== -1 && earliestBadIndex !== -1 && latestGoodIndex < earliestBadIndex
-    ? { 
-        start: reversedEarliestBadIndex,
-        end: reversedLatestGoodIndex,
+  // Calculate search range - when complete, show from initial good to initial bad
+  // When active, show the current narrowing range
+  let searchRange: { start: number; end: number } | null = null;
+  
+  if (allCommits.length > 0) {
+    if (complete) {
+      // When complete, show the full range from initial good to initial bad
+      if (originalGoodIndex !== -1 && originalBadIndex !== -1) {
+        searchRange = {
+          start: allCommits.length - 1 - originalBadIndex,
+          end: allCommits.length - 1 - originalGoodIndex,
+        };
+      } else if (latestGoodIndex !== -1 && earliestBadIndex !== -1) {
+        searchRange = {
+          start: reversedEarliestBadIndex,
+          end: reversedLatestGoodIndex,
+        };
       }
-    : null;
+    } else {
+      // When active, show the current narrowing range
+      if (latestGoodIndex !== -1 && earliestBadIndex !== -1 && latestGoodIndex < earliestBadIndex) {
+        searchRange = {
+          start: reversedEarliestBadIndex,
+          end: reversedLatestGoodIndex,
+        };
+      }
+    }
+  }
 
   const itemHeight = 76;
 
@@ -72,10 +94,23 @@ export default function BisectVisualization({
     const isInitialGood = commitHash === initialGoodCommit;
     const isInitialBad = commitHash === initialBadCommit;
     
-    if (complete && commitHash === firstBadCommit) {
-      return 'bad';
+    // When complete, show all tested commits with their status
+    if (complete) {
+      if (commitHash === firstBadCommit) {
+        return 'bad';
+      }
+      // Check if commit was marked as good or bad during bisect
+      if (isInitialGood || goodCommits.some(gc => commitHash === gc || commitHash.startsWith(gc) || gc.startsWith(commitHash))) {
+        return 'good';
+      }
+      if (isInitialBad || badCommits.some(bc => commitHash === bc || commitHash.startsWith(bc) || bc.startsWith(commitHash))) {
+        return 'bad';
+      }
+      return 'unknown';
     }
-    if (!complete && commitHash === currentCommit) {
+    
+    // During active bisect, show current commit as testing
+    if (commitHash === currentCommit) {
       return 'testing';
     }
     
@@ -86,10 +121,10 @@ export default function BisectVisualization({
       return 'unknown';
     }
     
-    if (isInitialGood || goodCommits.includes(commitHash)) {
+    if (isInitialGood || goodCommits.some(gc => commitHash === gc || commitHash.startsWith(gc) || gc.startsWith(commitHash))) {
       return 'good';
     }
-    if (isInitialBad || badCommits.includes(commitHash)) {
+    if (isInitialBad || badCommits.some(bc => commitHash === bc || commitHash.startsWith(bc) || bc.startsWith(commitHash))) {
       return 'bad';
     }
     return 'unknown';
