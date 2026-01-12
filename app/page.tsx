@@ -6,7 +6,7 @@ export default function Home() {
     <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-white dark:from-gray-900 dark:via-gray-950 dark:to-gray-900" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
         
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
@@ -20,7 +20,7 @@ export default function Home() {
                   </span>
                 </h1>
                 <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl">
-                  Identify the commit that introduced a bug. Then put up a fix.
+                  Identify the commit that introduced the bug. <br />Then put up the fix.
                 </p>
               </div>
               
@@ -45,8 +45,7 @@ export default function Home() {
             
             <div className="lg:pl-8">
               <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-2xl blur-2xl opacity-50" />
-                <div className="relative bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-xl">
+                <div className="relative rounded-xl p-6">
                   <BisectAnimation />
                 </div>
               </div>

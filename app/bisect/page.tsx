@@ -53,8 +53,9 @@ export default function BisectPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 items-center justify-center flex px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-white dark:bg-gray-950 items-center justify-center flex px-4 sm:px-6 lg:px-8 relative">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+      <div className="max-w-2xl mx-auto relative z-10">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Start Git Bisect

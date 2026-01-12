@@ -289,8 +289,9 @@ export default function BisectSessionPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-950 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+        <div className="text-center relative z-10">
           <div className="text-gray-600 dark:text-gray-400">Loading bisect status...</div>
         </div>
       </div>
@@ -298,8 +299,9 @@ export default function BisectSessionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+      <div className="max-w-4xl mx-auto relative z-10">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Git Bisect Session
@@ -473,7 +475,7 @@ export default function BisectSessionPage() {
         ) : status && status.active ? (
           // Active Bisect Session
           <>
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6 mb-6">
+            <div className="mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                 Bisect Progress
               </h2>
@@ -593,7 +595,7 @@ export default function BisectSessionPage() {
               <div className="flex border-b border-gray-200 dark:border-gray-800">
                 <button
                   onClick={() => setActiveTab('bisect')}
-                  className={`flex-1 px-6 py-3 text-sm font-medium transition-colors text-gray-900 dark:text-white ${
+                  className={`flex-1 px-6 py-3 text-sm font-medium transition-colors cursor-pointer text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 ${
                     activeTab === 'bisect'
                       ? 'border-b-2 border-gray-900 dark:border-white'
                       : ''
@@ -603,13 +605,13 @@ export default function BisectSessionPage() {
                 </button>
                 <button
                   onClick={() => setActiveTab('ai')}
-                  className={`flex-1 px-6 py-3 text-sm font-medium transition-colors text-gray-900 dark:text-white ${
+                  className={`flex-1 px-6 py-3 text-sm font-medium transition-colors cursor-pointer text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 ${
                     activeTab === 'ai'
                       ? 'border-b-2 border-gray-900 dark:border-white'
                       : ''
                   }`}
                 >
-                  AI-Powered Analysis
+                  AI Commit Analysis
                 </button>
               </div>
             </div>
@@ -679,7 +681,7 @@ export default function BisectSessionPage() {
               <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                    AI-Powered Commit Analysis
+                    AI Commit Analysis
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400">
                     Describe the issue and let AI analyze commits to find the most likely culprit.
@@ -687,22 +689,8 @@ export default function BisectSessionPage() {
                 </div>
 
               <div className="space-y-4 mb-6">
-                <div>
-                  <label htmlFor="issueDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Issue Description
-                  </label>
-                  <textarea
-                    id="issueDescription"
-                    value={issueDescription}
-                    onChange={(e) => setIssueDescription(e.target.value)}
-                    placeholder="Describe the bug or issue you're trying to find. Be specific about what's broken, error messages, or unexpected behavior..."
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent"
-                    rows={4}
-                    disabled={analyzing}
-                  />
-                </div>
 
-                <div>
+              <div>
                   <label htmlFor="badCommitAnalyze" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Bad Commit Hash
                   </label>
@@ -715,6 +703,9 @@ export default function BisectSessionPage() {
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
                     disabled={analyzing}
                   />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Enter the full commit hash of a commit where the bug IS present
+                  </p>
                 </div>
 
                 <div>
@@ -730,7 +721,27 @@ export default function BisectSessionPage() {
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
                     disabled={analyzing}
                   />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Enter the full commit hash of a commit where the bug is NOT present
+                  </p>
                 </div>
+
+                <div>
+                  <label htmlFor="issueDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Issue Description
+                  </label>
+                  <textarea
+                    id="issueDescription"
+                    value={issueDescription}
+                    onChange={(e) => setIssueDescription(e.target.value)}
+                    placeholder="Describe the bug or issue you're trying to find. Be specific about what's broken, error messages, or unexpected behavior..."
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent"
+                    rows={4}
+                    disabled={analyzing}
+                  />
+                </div>
+
+
 
                 <button
                   type="button"
