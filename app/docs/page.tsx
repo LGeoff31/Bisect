@@ -1,7 +1,8 @@
 export default function DocsPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 py-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-white dark:bg-gray-950 py-16 px-4 sm:px-6 lg:px-8 relative">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+      <div className="max-w-3xl mx-auto relative z-10">
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
             Documentation

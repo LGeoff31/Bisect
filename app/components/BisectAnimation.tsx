@@ -44,15 +44,8 @@ export default function BisectAnimation() {
   const [commits, setCommits] = useState<Commit[]>(initializeCommits);
   const [searchRange, setSearchRange] = useState<{ start: number; end: number } | null>(null);
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    
     let commits = initializeCommits();
     setCommits(commits);
     let stepIndex = 0;
@@ -165,13 +158,17 @@ export default function BisectAnimation() {
       },
     ];
 
+    // Start the animation immediately
+    steps[stepIndex]();
+    stepIndex = (stepIndex + 1) % steps.length;
+
     const interval = setInterval(() => {
       steps[stepIndex]();
       stepIndex = (stepIndex + 1) % steps.length;
     }, 1800);
 
     return () => clearInterval(interval);
-  }, [mounted]);
+  }, []);
 
   const isInSearchRange = (index: number) => {
     if (!searchRange) return true; // If no range set, show all
