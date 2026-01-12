@@ -5,7 +5,6 @@
 
 - [Introduction](#introduction)
 - [How to use](#how-to-use)
-- [Architecture](#architecture)
 - [Endpoints](#Endpoints)
 
 ## Introduction
