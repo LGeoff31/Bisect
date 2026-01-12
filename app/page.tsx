@@ -20,7 +20,7 @@ export default function Home() {
                   </span>
                 </h1>
                 <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl">
-                  Identify the commit that introduced the bug. <br />Then put up the fix.
+                  Identify the commit that introduced the bug. <br />Then get the instant fix.
                 </p>
               </div>
               

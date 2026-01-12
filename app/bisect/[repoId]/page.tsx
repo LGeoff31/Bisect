@@ -299,10 +299,10 @@ export default function BisectSessionPage() {
   }
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative flex flex-col justify-center">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-      <div className="max-w-4xl mx-auto relative z-10">
-        <div className="mb-8">
+      <div className="relative z-10">
+        <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Git Bisect Session
           </h1>
@@ -319,181 +319,226 @@ export default function BisectSessionPage() {
 
         {status && status.complete ? (
           // Bisect Complete
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/20 mb-4">
-                <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+          <>
+            <div className="relative mb-6">
+              <div className="flex justify-center">
+                <div className="w-full max-w-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    Current Commit to Test
+                  </h2>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Commit Hash
+                </label>
+                <code className="block text-sm font-mono bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-md text-gray-900 dark:text-white break-all">
+                  {status.firstBadCommit || 'N/A'}
+                </code>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Bisect Complete!
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                The first bad commit has been identified.
-              </p>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Commit Message
+                </label>
+                <p className="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-md">
+                  {status.commitMessage || 'N/A'}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Commit Date
+                </label>
+                <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-md">
+                  {formatDate(status.commitDate)}
+                </p>
+              </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                First Bad Commit
-              </h3>
-              <code className="text-lg font-mono text-gray-900 dark:text-white break-all">
-                {status.firstBadCommit || 'Unknown'}
-              </code>
-            </div>
-
-            {fixResults ? (
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 mb-6">
-                <h3 className="text-lg font-bold text-green-900 dark:text-green-200 mb-4">
-                  ✓ Fix Created Successfully!
-                </h3>
-                <div className="space-y-2 mb-4">
-                  <div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Branch: </span>
-                    <code className="text-sm font-mono text-gray-900 dark:text-white">{fixResults.branchName}</code>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Commit: </span>
-                    <code className="text-sm font-mono text-gray-900 dark:text-white">{fixResults.commitHash.substring(0, 7)}</code>
-                  </div>
-                  {fixResults.summary && (
-                    <div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Summary: </span>
-                      <p className="text-sm text-gray-900 dark:text-white">{fixResults.summary}</p>
-                    </div>
-                  )}
-                  {fixResults.fixes && fixResults.fixes.length > 0 && (
-                    <div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Files Fixed: </span>
-                      <ul className="list-disc list-inside text-sm text-gray-900 dark:text-white mt-1">
-                        {fixResults.fixes.map((fix: any, idx: number) => (
-                          <li key={idx}>
-                            <code className="font-mono">{fix.file}</code> - {fix.explanation}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {fixResults.prUrl && (
-                    <div className="mt-4 pt-4 border-t border-green-200 dark:border-green-800">
-                      <a
-                        href={fixResults.prUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-                        </svg>
-                        View Pull Request #{fixResults.prNumber}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : showFixForm ? (
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                  Create AI-Powered Fix
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="fixIssueDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Issue Description
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <div className="mb-4">
+                <button
+                  onClick={() => setShowEnvVars(!showEnvVars)}
+                  className="w-full mb-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors flex items-center justify-between"
+                >
+                  <span>Environment Variables (Optional)</span>
+                  <span>{showEnvVars ? '▼' : '▶'}</span>
+                </button>
+                
+                {showEnvVars && (
+                  <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Enter environment variables (one per line, format: KEY=value)
                     </label>
                     <textarea
-                      id="fixIssueDescription"
-                      value={fixIssueDescription}
-                      onChange={(e) => setFixIssueDescription(e.target.value)}
-                      placeholder="Describe the bug that was introduced in this commit..."
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent"
-                      rows={4}
-                      disabled={creatingFix}
+                      value={envVars}
+                      onChange={(e) => setEnvVars(e.target.value)}
+                      placeholder="DATABASE_URL=postgresql://user:password@localhost:5432/dbname&#10;API_KEY=your-secret-key-here&#10;NEXT_PUBLIC_API_URL=https://api.example.com"
+                      className="w-full px-3 py-2 text-sm font-mono border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent"
+                      rows={6}
                     />
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      Values are saved per repository and reused across launches.
+                    </p>
                   </div>
-                  <div>
-                    <label htmlFor="fixBranchName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Branch Name (Optional)
-                    </label>
-                    <input
-                      id="fixBranchName"
-                      type="text"
-                      value={fixBranchName}
-                      onChange={(e) => setFixBranchName(e.target.value)}
-                      placeholder="fix/bug-abc123 (auto-generated if empty)"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
-                      disabled={creatingFix}
-                    />
+                )}
+
+                <button
+                  onClick={handleLaunch}
+                  disabled={launching || !status.firstBadCommit}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-blue-600 disabled:hover:to-blue-700 mb-4 shadow-md hover:shadow-lg"
+                >
+                  {launching ? 'Launching...' : 'Launch App'}
+                </button>
+                {launchUrl && (
+                  <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                    App running at: <a href={launchUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">{launchUrl}</a>
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-3 justify-center">
+                {!fixResults && !showFixForm && (
+                  <button
+                    onClick={() => {
+                      setShowFixForm(true);
+                      if (issueDescription) {
+                        setFixIssueDescription(issueDescription);
+                      }
+                    }}
+                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg"
+                  >
+                    Create Fix
+                  </button>
+                )}
+                {showFixForm && (
+                  <div className="w-full">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                      Create AI-Powered Fix
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="fixIssueDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Issue Description
+                        </label>
+                        <textarea
+                          id="fixIssueDescription"
+                          value={fixIssueDescription}
+                          onChange={(e) => setFixIssueDescription(e.target.value)}
+                          placeholder="Describe the bug that was introduced in this commit..."
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent"
+                          rows={4}
+                          disabled={creatingFix}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="fixBranchName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Branch Name (Optional)
+                        </label>
+                        <input
+                          id="fixBranchName"
+                          type="text"
+                          value={fixBranchName}
+                          onChange={(e) => setFixBranchName(e.target.value)}
+                          placeholder="fix/bug-abc123 (auto-generated if empty)"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent font-mono text-sm"
+                          disabled={creatingFix}
+                        />
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={handleCreateFix}
+                          disabled={creatingFix || !fixIssueDescription.trim()}
+                          className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {creatingFix ? 'Creating Fix...' : 'Create Fix'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowFixForm(false);
+                            setFixIssueDescription('');
+                            setFixBranchName('');
+                          }}
+                          disabled={creatingFix}
+                          className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-medium rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleCreateFix}
-                      disabled={creatingFix || !fixIssueDescription.trim()}
-                      className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {creatingFix ? 'Creating Fix...' : 'Create Fix'}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowFixForm(false);
-                        setFixIssueDescription('');
-                        setFixBranchName('');
-                      }}
-                      disabled={creatingFix}
-                      className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white font-medium rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Cancel
-                    </button>
+                )}
+                {fixResults && (
+                  <div className="w-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
+                    <h3 className="text-lg font-bold text-green-900 dark:text-green-200 mb-4">
+                      Fix Created Successfully!
+                    </h3>
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Branch: </span>
+                        <code className="text-sm font-mono text-gray-900 dark:text-white">{fixResults.branchName}</code>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Commit: </span>
+                        <code className="text-sm font-mono text-gray-900 dark:text-white">{fixResults.commitHash.substring(0, 7)}</code>
+                      </div>
+                      {fixResults.prUrl && (
+                        <div className="mt-4">
+                          <a
+                            href={fixResults.prUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
+                          >
+                            View Pull Request #{fixResults.prNumber}
+                          </a>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                )}
+              </div>
+            </div>
                 </div>
               </div>
-            ) : null}
-
-            <div className="flex gap-3 justify-center">
-              {!fixResults && (
-                <button
-                  onClick={() => {
-                    setShowFixForm(true);
-                    if (issueDescription) {
-                      setFixIssueDescription(issueDescription);
-                    }
-                  }}
-                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  Create Fix
-                </button>
-              )}
-              <button
-                onClick={() => router.push('/bisect')}
-                className="px-6 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
-              >
-                Start New Bisect
-              </button>
+              <div className="lg:hidden mt-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Bisect Progress
+                </h2>
+                <BisectVisualization
+                  goodCommits={status.goodCommits || []}
+                  badCommits={status.badCommits || []}
+                  currentCommit={status.currentCommit}
+                  allCommits={status.allCommits || []}
+                  initialGoodCommit={status.initialGoodCommit}
+                  initialBadCommit={status.initialBadCommit}
+                  firstBadCommit={status.firstBadCommit}
+                  complete={status.complete}
+                />
+              </div>
+              <div className="hidden lg:block absolute right-4 xl:right-70" style={{ top: '24px' }}>
+                <BisectVisualization
+                  goodCommits={status.goodCommits || []}
+                  badCommits={status.badCommits || []}
+                  currentCommit={status.currentCommit}
+                  allCommits={status.allCommits || []}
+                  initialGoodCommit={status.initialGoodCommit}
+                  initialBadCommit={status.initialBadCommit}
+                  firstBadCommit={status.firstBadCommit}
+                  complete={status.complete}
+                />
+              </div>
             </div>
-          </div>
+          </>
         ) : status && status.active ? (
           // Active Bisect Session
           <>
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                Bisect Progress
-              </h2>
-              <BisectVisualization
-                goodCommits={status.goodCommits || []}
-                badCommits={status.badCommits || []}
-                currentCommit={status.currentCommit}
-                allCommits={status.allCommits || []}
-                initialGoodCommit={status.initialGoodCommit}
-                initialBadCommit={status.initialBadCommit}
-                firstBadCommit={status.firstBadCommit}
-                complete={status.complete}
-              />
-            </div>
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                Current Commit to Test
-              </h2>
+            <div className="relative mb-6">
+              <div className="flex justify-center">
+                <div className="w-full max-w-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    Current Commit to Test
+                  </h2>
 
             <div className="space-y-4 mb-6">
               <div>
@@ -542,7 +587,7 @@ export default function BisectSessionPage() {
                     <textarea
                       value={envVars}
                       onChange={(e) => setEnvVars(e.target.value)}
-                      placeholder="DATABASE_URL=postgres://...&#10;API_KEY=secret123&#10;# Comments start with #"
+                      placeholder="DATABASE_URL=postgresql://user:password@localhost:5432/dbname&#10;API_KEY=your-secret-key-here&#10;NEXT_PUBLIC_API_URL=https://api.example.com"
                       className="w-full px-3 py-2 text-sm font-mono border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent"
                       rows={6}
                     />
@@ -555,7 +600,7 @@ export default function BisectSessionPage() {
                 <button
                   onClick={handleLaunch}
                   disabled={launching || !status.currentCommit}
-                  className="w-full px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+                  className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-blue-600 disabled:hover:to-blue-700 mb-4 shadow-md hover:shadow-lg"
                 >
                   {launching ? 'Launching...' : 'Launch App'}
                 </button>
@@ -572,26 +617,57 @@ export default function BisectSessionPage() {
                 <button
                   onClick={() => handleMarkCommit('good')}
                   disabled={marking}
-                  className="px-6 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-12 h-12 bg-green-600 text-white font-medium rounded-full hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-xl"
+                  title="Mark as Good"
                 >
-                  {marking ? 'Marking...' : 'Mark as Good'}
+                  {marking ? <span className="animate-spin">⟳</span> : '✓'}
                 </button>
                 <button
                   onClick={() => handleMarkCommit('bad')}
                   disabled={marking}
-                  className="px-6 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-12 h-12 bg-red-600 text-white font-medium rounded-full hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-xl"
+                  title="Mark as Bad"
                 >
-                  {marking ? 'Marking...' : 'Mark as Bad'}
+                  {marking ? <span className="animate-spin">⟳</span> : '✗'}
                 </button>
               </div>
             </div>
-          </div>
+                </div>
+              </div>
+              <div className="lg:hidden mt-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Bisect Progress
+                </h2>
+                <BisectVisualization
+                  goodCommits={status.goodCommits || []}
+                  badCommits={status.badCommits || []}
+                  currentCommit={status.currentCommit}
+                  allCommits={status.allCommits || []}
+                  initialGoodCommit={status.initialGoodCommit}
+                  initialBadCommit={status.initialBadCommit}
+                  firstBadCommit={status.firstBadCommit}
+                  complete={status.complete}
+                />
+              </div>
+              <div className="hidden lg:block absolute right-4 xl:right-70" style={{ top: '24px' }}>
+                <BisectVisualization
+                  goodCommits={status.goodCommits || []}
+                  badCommits={status.badCommits || []}
+                  currentCommit={status.currentCommit}
+                  allCommits={status.allCommits || []}
+                  initialGoodCommit={status.initialGoodCommit}
+                  initialBadCommit={status.initialBadCommit}
+                  firstBadCommit={status.firstBadCommit}
+                  complete={status.complete}
+                />
+              </div>
+            </div>
           </>
         ) : (
           // No Active Session - Start Bisect Form
           <div className="space-y-6">
             {/* Tabs */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg max-w-2xl mx-auto">
               <div className="flex border-b border-gray-200 dark:border-gray-800">
                 <button
                   onClick={() => setActiveTab('bisect')}
@@ -617,7 +693,7 @@ export default function BisectSessionPage() {
             </div>
 
             {activeTab === 'bisect' ? (
-              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6 max-w-2xl mx-auto">
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                     Start Git Bisect
@@ -678,13 +754,13 @@ export default function BisectSessionPage() {
                 </form>
               </div>
             ) : (
-              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6">
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-6 max-w-2xl mx-auto">
                 <div className="text-center mb-6">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                     AI Commit Analysis
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Describe the issue and let AI analyze commits to find the most likely culprit.
+                    Describe the issue and let AI analyze commits to find the culprit.
                   </p>
                 </div>
 

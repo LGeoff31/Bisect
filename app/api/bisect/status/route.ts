@@ -97,6 +97,22 @@ export async function GET(request: NextRequest) {
     let commitMessage: string | null = null;
     let commitDate: string | null = null;
     let allCommits: Array<{ hash: string; message: string; date: string }> = [];
+    
+    // If complete, fetch first bad commit details
+    if (complete && firstBadCommit) {
+      try {
+        const show = await git.raw(['show', '-s', '--format=%H|%s|%ai', firstBadCommit]);
+        const parts = show.trim().split('|');
+        if (parts.length >= 3) {
+          currentCommit = parts[0].trim();
+          commitMessage = parts[1].trim();
+          commitDate = parts[2].trim();
+        }
+      } catch (error) {
+        console.error('[Bisect Status] Error fetching first bad commit:', error);
+      }
+    }
+    
     if (active && initialGoodCommit && initialBadCommit) {
       try {
         const currentCommitHash = (await git.revparse(['HEAD'])).trim();
