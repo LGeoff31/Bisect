@@ -1,18 +1,33 @@
 # Bisect
-
-<img width="1918" height="903" alt="image" src="https://github.com/user-attachments/assets/ca11bb59-ebe7-49d1-9467-37651881750b" />
+<img width="961" height="458" alt="Screenshot 2026-01-12 at 1 49 17 AM" src="https://github.com/user-attachments/assets/466cc819-920a-43df-ac05-4486fa64b149" />
 
 ## Table of Contents
 
 - [Introduction](#introduction)
 - [How to use](#how-to-use)
 - [Architecture](#architecture)
-- [Building process](#building-process)
+- [Endpoints](#Backend endpoints (written and concised by me))
+
+## Introduction
+
+**Bisect** is a interactive tool to identify and fix the commit that introduced a bug.
+
+*Suppose I'm working on a large codebase with 12 other developers. I suddenly notice we no longer recieve any loggings, which previously was working. 
+Now, I need to identify which commit our team pushed caused the bug, then create a fix.*
+
+Bisect simplifies this two-step process immensely.
+
+It can either:
+1) Binary search to a specific commit and launch the user's app, allowing them to test the commit in real-time.
+2) An AI agent will get context of the bug, then linearly scan through each commit's added source code to calculate the likelihood of the commit causing the bug
+
+Then proceed by creating a **pull request** with the fix.
+
+## How to use
+Check out the documentation on the website :D
 
 
-
-
-## Backend endpoints (written by me and concised for demonstration)
+## Backend endpoints (written and concised by me)
 
 Clones their github repo into a ```.repos/{repoId}``` directory.
 ```ts
