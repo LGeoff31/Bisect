@@ -6,7 +6,7 @@
 - [Introduction](#introduction)
 - [How to use](#how-to-use)
 - [Architecture](#architecture)
-- [Endpoints](#Backend endpoints (written and concised by me))
+- [Endpoints](#Backend)
 
 ## Introduction
 
@@ -27,7 +27,8 @@ Then proceed by creating a **pull request** with the fix.
 Check out the documentation on the website :D
 
 
-## Backend endpoints (written and concised by me)
+## Endpoints 
+#### Backend Endpoints (written and concised by me)
 
 Clones their github repo into a ```.repos/{repoId}``` directory.
 ```ts
