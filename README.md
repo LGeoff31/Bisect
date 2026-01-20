@@ -25,6 +25,10 @@ Then proceed by creating a **pull request** with the fix.
 ## How to use
 Check out the website which includes a live-demo video as well as documentation.
 
+https://github.com/user-attachments/assets/4e51d921-defe-408e-93ef-dfe51091e113
+
+
+
 ## Endpoints 
 #### Backend Endpoints (written and concised by me)
 
