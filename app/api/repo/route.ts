@@ -85,7 +85,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const reposDir = path.join(process.cwd(), '.repos');
+    // Use a configurable base directory for repositories.
+    // In production (e.g. Vercel), /var/task is read-only, so we default to /tmp.
+    // Locally you can set REPOS_BASE_DIR="." to keep repos under the project root.
+    const baseDir = process.env.REPOS_BASE_DIR || '/tmp';
+    const reposDir = path.join(baseDir, '.repos');
     await fs.mkdir(reposDir, { recursive: true });
 
     // Get stable identifier for this repo

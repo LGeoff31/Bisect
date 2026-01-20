@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const repoDir = path.join(process.cwd(), '.repos', repoId);
+    const baseDir = process.env.REPOS_BASE_DIR || '/tmp';
+    const repoDir = path.join(baseDir, '.repos', repoId);
     
     try {
       await fs.access(repoDir);
