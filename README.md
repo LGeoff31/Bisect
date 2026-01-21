@@ -1,5 +1,4 @@
 # Bisect
-<img width="961" height="458" alt="Screenshot 2026-01-12 at 1 49 17 AM" src="https://github.com/user-attachments/assets/466cc819-920a-43df-ac05-4486fa64b149" />
 
 ## Table of Contents
 
